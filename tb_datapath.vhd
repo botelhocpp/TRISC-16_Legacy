@@ -24,7 +24,7 @@ ARCHITECTURE behaviour OF tb_datapath IS
     CONSTANT CLK_PERIOD : TIME := 5000ms / CLK_FREQ;
 
     COMPONENT datapath IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := N );
     PORT (
         Immed : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);

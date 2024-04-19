@@ -88,7 +88,7 @@ ARCHITECTURE hardware OF datapath IS
     SIGNAL alu_res : word_t;
     
 BEGIN
-    MUX_COMP : mux_4x1 PORT MAP (
+    RF_MUX_COMP : mux_4x1 PORT MAP (
         I0 => Rm,
         I1 => RAM_in,
         I2 => Immed,
