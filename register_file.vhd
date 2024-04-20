@@ -48,13 +48,9 @@ ARCHITECTURE hardware OF register_file IS
     SIGNAL registers_ld : STD_LOGIC_VECTOR(7 DOWNTO 0);
     
 BEGIN  
-    registers_ld <= (
-        CONV_INTEGER(Rd_sel) => ( Rd_wr AND '1' ),
-        OTHERS => '0'
-    );
-    
     generate_registers:
     FOR i IN 7 DOWNTO 0 GENERATE
+    registers_ld(i) <= '1' when Rd_sel = i and Rd_wr = '1' else '0';
         REGS: register_nbit PORT MAP (
             D => Rd,
             ld => registers_ld(i),

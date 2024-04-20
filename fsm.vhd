@@ -56,8 +56,7 @@ ARCHITECTURE hardware OF fsm IS
         EXEC_ALU
     );
     SIGNAL current_state : states_t := INIT;
-    -- SIGNAL opcode : STD_LOGIC_VECTOR(3 DOWNTO 0);
-    SIGNAL instruction_test : STD_LOGIC_VECTOR(15 DOWNTO 0);
+    SIGNAL current_instruction : STD_LOGIC_VECTOR(15 DOWNTO 0);
     
 BEGIN  
     PROCESS(clk, rst)
@@ -65,8 +64,7 @@ BEGIN
         IF(rst = '1') THEN
             current_state <= INIT;
         ELSIF(RISING_EDGE(clk)) THEN
-		-- opcode <= IR_data(15 DOWNTO 12);
-		    instruction_test <= IR_data;
+		    current_instruction <= IR_data;
             CASE current_state IS
                 WHEN INIT =>
                     PC_clr <= '1';
@@ -98,26 +96,26 @@ BEGIN
                     ROM_en <= '0';
                     IR_load <= '0';
                     
-                    Rd_sel <= instruction_test(10 DOWNTO 8);
-                    Rm_sel <= instruction_test(7 DOWNTO 5);
-                    Rn_sel <= instruction_test(4 DOWNTO 2);
+                    Rd_sel <= current_instruction(10 DOWNTO 8);
+                    Rm_sel <= current_instruction(7 DOWNTO 5);
+                    Rn_sel <= current_instruction(4 DOWNTO 2);
                     
-                    IF(instruction_test(15 DOWNTO 12) = "0000") THEN
+                    IF(current_instruction(15 DOWNTO 12) = "0000") THEN
                         current_state <= EXEC_NOP;
                         
-                    ELSIF(instruction_test(15 DOWNTO 12) = "1111") THEN
+                    ELSIF(current_instruction(15 DOWNTO 12) = "1111") THEN
                         current_state <= EXEC_HALT;
                         
-                    ELSIF(instruction_test(15 DOWNTO 12) = "0001") THEN
+                    ELSIF(current_instruction(15 DOWNTO 12) = "0001") THEN
                         current_state <= EXEC_MOVE;
                         
-                    ELSIF(instruction_test(15 DOWNTO 12) = "0010") THEN
+                    ELSIF(current_instruction(15 DOWNTO 12) = "0010") THEN
                         current_state <= EXEC_STORE;
                         
-                    ELSIF(instruction_test(15 DOWNTO 12) = "0011") THEN
+                    ELSIF(current_instruction(15 DOWNTO 12) = "0011") THEN
                         current_state <= EXEC_LOAD;
                         
-                    ELSIF(instruction_test(15 DOWNTO 12) >= "0100" AND instruction_test(15 DOWNTO 12) <=  "1010") THEN
+                    ELSIF(current_instruction(15 DOWNTO 12) >= "0100" AND current_instruction(15 DOWNTO 12) <=  "1010") THEN
                         current_state <= EXEC_ALU;
                     END IF;
                     
@@ -129,8 +127,8 @@ BEGIN
                     
                 WHEN EXEC_MOVE =>
                     Rd_wr <= '1';
-                    IF(instruction_test(11) = '1') THEN
-                        Immed <= x"00" & instruction_test(7 DOWNTO 0);
+                    IF(current_instruction(11) = '1') THEN
+                        Immed <= x"00" & current_instruction(7 DOWNTO 0);
                         RF_sel <= "10";
                     ELSE
                         RF_sel <= "00";
@@ -144,8 +142,8 @@ BEGIN
                     
                 WHEN EXEC_STORE =>
                     RAM_we <= '1';
-                    IF(instruction_test(11) = '1') THEN
-                        Immed <= x"00" & instruction_test(10 DOWNTO 8) & instruction_test(4 DOWNTO 0);
+                    IF(current_instruction(11) = '1') THEN
+                        Immed <= x"00" & current_instruction(10 DOWNTO 8) & current_instruction(4 DOWNTO 0);
                         RAM_sel <= '1';
                     ELSE
                         RAM_sel <= '0';
@@ -155,7 +153,7 @@ BEGIN
                 WHEN EXEC_ALU =>
                     RF_sel <= "11";
                     Rd_wr <= '1';
-                    alu_op <= instruction_test(15 DOWNTO 12);
+                    alu_op <= current_instruction(15 DOWNTO 12);
                     current_state <= FETCH;
             END CASE;
         END IF;

@@ -26,11 +26,13 @@ ENTITY alu IS
 END alu;
 
 ARCHITECTURE hardware OF alu IS
+    SIGNAL multiply_result : STD_LOGIC_VECTOR( 2*N - 1 DOWNTO 0 );
 BEGIN
+    multiply_result <= A * B;
     WITH op SELECT
         Q <=   (A + B)          WHEN "0100",
                (A - B)          WHEN "0101",
-               (A * B)          WHEN "0110",
+               (multiply_result( N - 1 DOWNTO 0 ))          WHEN "0110",
                (A AND B)        WHEN "0111",
                (A OR B)         WHEN "1000",
                (NOT A)          WHEN "1001",
