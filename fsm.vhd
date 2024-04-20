@@ -5,6 +5,7 @@
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
 -- Description: Controls the processor instruction execution.
+-- Observations: The first execution round executes NOP, because the reset state of IR is 0.
 -- 
 -- Dependencies: none
 -- 

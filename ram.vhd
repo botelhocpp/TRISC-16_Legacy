@@ -26,12 +26,13 @@ ENTITY ram IS
 END ram;
 
 ARCHITECTURE hardware OF ram IS
-    TYPE ram_array_t IS ARRAY (0 TO 3) OF STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
+    TYPE ram_array_t IS ARRAY (0 TO 65535) OF STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     SIGNAL ram_contents : ram_array_t := (
         x"0000",    -- 0
         x"1000",    -- 2
         x"2000",    -- 4
-        x"0000"     -- 6
+        x"0000",    -- 6
+        OTHERS => x"0000"
     );
 BEGIN    
     PROCESS(clk)

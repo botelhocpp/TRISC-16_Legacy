@@ -50,6 +50,12 @@ BEGIN
         WAIT FOR CLK_PERIOD;
         
         rst <= '0';
-        WAIT FOR 50*CLK_PERIOD;
+        WAIT FOR 20*CLK_PERIOD;
+        
+        rst <= '0';
+        WAIT FOR 20*CLK_PERIOD;
+        
+        rst <= '0';
+        WAIT FOR 20*CLK_PERIOD;
     END PROCESS;
 END behaviour;
