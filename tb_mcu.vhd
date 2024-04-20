@@ -47,15 +47,9 @@ BEGIN
     BEGIN
         -- RESET CONDITION
         rst <= '1';
-        WAIT FOR CLK_PERIOD;
+        WAIT FOR CLK_PERIOD/2;
         
         rst <= '0';
-        WAIT FOR 20*CLK_PERIOD;
-        
-        rst <= '0';
-        WAIT FOR 20*CLK_PERIOD;
-        
-        rst <= '0';
-        WAIT FOR 20*CLK_PERIOD;
+        WAIT FOR 60*CLK_PERIOD;
     END PROCESS;
 END behaviour;
