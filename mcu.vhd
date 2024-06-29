@@ -29,13 +29,15 @@ ARCHITECTURE behaviour OF mcu IS
     PORT (
         ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_we : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
     
@@ -65,32 +67,36 @@ ARCHITECTURE behaviour OF mcu IS
     -- Input Signals
     SIGNAL ROM_in : word_t;
     SIGNAL RAM_in : word_t;
+    SIGNAL IO_in : word_t;
     
     -- Output Signals
     SIGNAL ROM_addr : word_t;
-    SIGNAL RAM_out : word_t;
-    SIGNAL RAM_addr : word_t;
+    SIGNAL DATA_out : word_t;
+    SIGNAL DATA_addr : word_t;
     
     -- Control Signals
     SIGNAL RAM_we : STD_LOGIC;
+    SIGNAL IO_we : STD_LOGIC;
     SIGNAL ROM_en : STD_LOGIC;
     
 BEGIN
     CPU_COMP : cpu PORT MAP (
         ROM_in => ROM_in,
         RAM_in => RAM_in,
+        IO_in => IO_in,
         clk => clk,
         rst => rst,
 		RAM_we => RAM_we,
+		IO_we => IO_we,
 		ROM_en => ROM_en,
         ROM_addr => ROM_addr,
-        RAM_addr => RAM_addr,
-        RAM_out => RAM_out
+        DATA_addr => DATA_addr,
+        DATA_out => DATA_out
     );
     
     RAM_COMP : ram PORT MAP (
-        din => RAM_out,
-        addr => RAM_addr,
+        din => DATA_out,
+        addr => DATA_addr,
         we => RAM_we,
         clk => clk,
         dout => RAM_in

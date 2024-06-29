@@ -20,14 +20,17 @@ ENTITY control_unit IS
     PORT (
         -- Inputs
         ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         
         -- Common
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
         
         -- Control Signals
-		RAM_sel : OUT STD_LOGIC;
+		Immed_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_we : OUT STD_LOGIC;
+		IN_sel : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -48,14 +51,18 @@ ARCHITECTURE hardware OF control_unit IS
     GENERIC ( N : INTEGER := N );
     PORT (
         IR_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        FLAGS_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        IR_load : OUT STD_LOGIC;
-        PC_clr : OUT STD_LOGIC;
-        PC_inc : OUT STD_LOGIC;
-		RAM_sel : OUT STD_LOGIC;
-		RAM_we : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
+        PC_inc : OUT STD_LOGIC;
+        PC_clr : OUT STD_LOGIC;
+        IR_load : OUT STD_LOGIC;
+        FLAGS_load : OUT STD_LOGIC;
+		Immed_en : OUT STD_LOGIC;
+		RAM_we : OUT STD_LOGIC;
+		IO_we : OUT STD_LOGIC;
+		IN_sel : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -77,17 +84,37 @@ ARCHITECTURE hardware OF control_unit IS
     );
     END COMPONENT;
     
+    COMPONENT mux_2x1 IS
+    GENERIC ( N : INTEGER := N );
+    PORT (
+        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        sel : IN STD_LOGIC;
+        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+    );
+    END COMPONENT;
+    
     SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
+    -- Constant
+    CONSTANT kPC_DEFAULT_INCREMENT : word_t := x"0002";
+    
     -- Input Signals
+    SIGNAL FLAGS_data : word_t;
     SIGNAL IR_data : word_t;
     SIGNAL PC_input : word_t;
     SIGNAL PC_output : word_t;
+    SIGNAL PC_increment : word_t;
     
-    -- Control Signals
+    -- Internal Control Signals
     SIGNAL PC_clr : STD_LOGIC;
     SIGNAL PC_inc : STD_LOGIC;
     SIGNAL IR_load : STD_LOGIC;
+    SIGNAL FLAGS_load : STD_LOGIC;
+    
+    -- Intermediary Signals
+    SIGNAL Immed_intermediary : word_t;
+    SIGNAL Immed_en_intermediary : STD_LOGIC;
     
 BEGIN
     PC: register_nbit PORT MAP (
@@ -104,15 +131,32 @@ BEGIN
         rst => rst,
         Q => IR_data
     );
+    FLAGS: register_nbit PORT MAP (
+        D => ("00000000000000" & FLAGS_in),
+        ld => FLAGS_load,
+        clk => clk,
+        rst => rst,
+        Q => FLAGS_data
+    );
+    ADDER_MUX_COMP: mux_2x1 PORT MAP (
+        I0 => kPC_DEFAULT_INCREMENT,
+        I1 => Immed_intermediary,
+        sel => Immed_en_intermediary,
+        Q => PC_increment
+    ); 
     FSM_COMP : fsm PORT MAP (
         IR_data => IR_data,
+        FLAGS_data => FLAGS_data,
         clk => clk,
         rst => rst,
         IR_load => IR_load,
+        FLAGS_load => FLAGS_load,
         PC_clr => PC_clr,
         PC_inc => PC_inc,
-		RAM_sel => RAM_sel,
+		IN_sel => IN_sel,
 		RAM_we => RAM_we,
+		IO_we => IO_we,
+		Immed_en => Immed_en_intermediary,
 		ROM_en => ROM_en,
         Rd_wr => Rd_wr,
         RF_sel => RF_sel,
@@ -120,10 +164,11 @@ BEGIN
         Rm_sel => Rm_sel,
         Rn_sel => Rn_sel,   
 		alu_op => alu_op,
-        Immed => Immed
+        Immed => Immed_intermediary
     );
-    
-    PC_input <= PC_output + 2;
+    PC_input <= PC_output + PC_increment;
     ROM_addr <= PC_output;
     
+    Immed <= Immed_intermediary;
+    Immed_en <= Immed_en_intermediary;
 END hardware;

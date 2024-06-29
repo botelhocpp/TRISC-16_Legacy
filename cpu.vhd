@@ -21,6 +21,7 @@ ENTITY cpu IS
         -- Inputs
         ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         
         -- Common
         clk : IN STD_LOGIC;
@@ -28,12 +29,13 @@ ENTITY cpu IS
         
         -- Control Signals
 		RAM_we : OUT STD_LOGIC;
+		IO_we : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         
         -- Outputs
         ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
 END cpu;
 
@@ -44,6 +46,9 @@ ARCHITECTURE behaviour OF cpu IS
     PORT (
         Immed : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        Immed_en : IN STD_LOGIC;
+        IN_sel : IN STD_LOGIC;
         RF_sel : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rd_wr : IN STD_LOGIC;
@@ -52,8 +57,9 @@ ARCHITECTURE behaviour OF cpu IS
         alu_op : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        RAM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        FLAGS_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
 
@@ -61,10 +67,13 @@ ARCHITECTURE behaviour OF cpu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-		RAM_sel : OUT STD_LOGIC;
+		Immed_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_we : OUT STD_LOGIC;
+		IN_sel : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -77,24 +86,15 @@ ARCHITECTURE behaviour OF cpu IS
     );
     END COMPONENT;
     
-    COMPONENT mux_2x1 IS
-    GENERIC ( N : INTEGER := N );
-    PORT (
-        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        sel : IN STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
-    );
-    END COMPONENT;
-    
     SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
     -- Intermediary I/O Signals
-    SIGNAL RAM_data_out : word_t;
     SIGNAL Immed : word_t;
+    SIGNAL FLAGS_data : STD_LOGIC_VECTOR (1 DOWNTO 0);
     
     -- Intermediary Control Signals
-    SIGNAL RAM_sel : STD_LOGIC;
+    SIGNAL Immed_en : STD_LOGIC;
+    SIGNAL IN_sel : STD_LOGIC;
     SIGNAL Rd_wr : STD_LOGIC;
     SIGNAL RF_sel : STD_LOGIC_VECTOR (1 DOWNTO 0);
     SIGNAL Rd_sel : STD_LOGIC_VECTOR (2 DOWNTO 0);
@@ -105,10 +105,13 @@ ARCHITECTURE behaviour OF cpu IS
 BEGIN    
     CTRL_UNIT_COMP : control_unit PORT MAP (
         ROM_in => ROM_in,
+        FLAGS_in => FLAGS_data,
         clk => clk,
         rst => rst,
-		RAM_sel => RAM_sel,
+		Immed_en => Immed_en,
 		RAM_we => RAM_we,
+		IO_we => IO_we,
+		IN_sel => IN_sel,
 		ROM_en => ROM_en,
         Rd_wr => Rd_wr,
         RF_sel => RF_sel,
@@ -123,6 +126,9 @@ BEGIN
     DP_COMP : datapath PORT MAP (
         Immed => Immed,
         RAM_in => RAM_in,
+        IO_in => IO_in,
+        Immed_en => Immed_en,
+        IN_sel => IN_sel,
         RF_sel => RF_sel,
         Rd_sel => Rd_sel,
         Rd_wr => Rd_wr,
@@ -131,15 +137,9 @@ BEGIN
         alu_op => alu_op,
         clk => clk,
         rst => rst,
-        RAM_addr => RAM_addr,
-        RAM_out => RAM_data_out
+        FLAGS_out => FLAGS_data,
+        DATA_addr => DATA_addr,
+        DATA_out => DATA_out
     );
-    
-    RAM_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => RAM_data_out,
-        I1 => Immed,
-        sel => RAM_sel,
-        Q => RAM_out
-    ); 
     
 END behaviour;

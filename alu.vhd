@@ -21,6 +21,8 @@ ENTITY alu IS
         A : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         B : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         op : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        Z_flag : OUT STD_LOGIC;
+        C_flag : OUT STD_LOGIC;
         Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
 END alu;
@@ -31,11 +33,7 @@ BEGIN
     multiply_result <= A * B;
     WITH op SELECT
         Q <=   (A + B)          WHEN "0100",
-               (A - B)          WHEN "0101",
-               (multiply_result( N - 1 DOWNTO 0 ))          WHEN "0110",
-               (A AND B)        WHEN "0111",
-               (A OR B)         WHEN "1000",
-               (NOT A)          WHEN "1001",
-               (A XOR B)        WHEN "1010",
                (OTHERS => '0')  WHEN OTHERS;
+    Z_flag <= '1';
+    C_flag <= '1';
 END hardware;
