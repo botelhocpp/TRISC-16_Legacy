@@ -37,18 +37,18 @@ BEGIN
     
     Q_mul <= A_op(N - 1 DOWNTO 0) * B_op(N - 1 DOWNTO 0);
     WITH op SELECT
-        Q_op <= (A_op + B_op)           WHEN "0100",
-                (A_op - B_op)           WHEN "0101",
-                (Q_mul( N DOWNTO 0 ))   WHEN "0110",
-                (A_op AND B_op)         WHEN "0111",
-                (A_op OR B_op)          WHEN "1000",
-                (NOT A_op)              WHEN "1001",
-                (A_op XOR B_op)         WHEN "1010",
-                (A_op)                  WHEN "1011", -- TODO: SHR
-                (A_op)                  WHEN "1100", -- TODO: SHL
-                (A_op)                  WHEN "1101", -- TODO: ROR
-                (A_op)                  WHEN "1110", -- TODO: ROL
-                (OTHERS => '0')         WHEN OTHERS;
+        Q_op <= (A_op + B_op)                           WHEN "0100",
+                (A_op - B_op)                           WHEN "0101",
+                (Q_mul( N DOWNTO 0 ))                   WHEN "0110",
+                (A_op AND B_op)                         WHEN "0111",
+                (A_op OR B_op)                          WHEN "1000",
+                (NOT A_op)                              WHEN "1001",
+                (A_op XOR B_op)                         WHEN "1010",
+                (SHIFT_RIGHT(A_op, TO_INTEGER(B_op)))   WHEN "1011",
+                (SHIFT_LEFT(A_op, TO_INTEGER(B_op)))    WHEN "1100",
+                (ROTATE_RIGHT(A_op, 1))                 WHEN "1101",
+                (ROTATE_LEFT(A_op, 1))                  WHEN "1110",
+                (OTHERS => '0')                         WHEN OTHERS;
     Q <= STD_LOGIC_VECTOR(Q_op(N - 1 DOWNTO 0)); 
     
     Z_flag <= '1' WHEN (Q_op(N - 1 DOWNTO 0) = x"0000") ELSE '0';

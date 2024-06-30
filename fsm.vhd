@@ -193,7 +193,7 @@ BEGIN
                 WHEN EXEC_MOVE =>
                     Rd_wr <= '1';
                     IF(IR_data(11) = '1') THEN
-                        Immed <= STD_LOGIC_VECTOR( RESIZE( SIGNED( IR_data( 7 DOWNTO 0 ) ), 16 ) );
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(7 DOWNTO 0)), 16));
                         RF_sel <= "01";
                     ELSE
                         RF_sel <= "00";
@@ -207,7 +207,7 @@ BEGIN
                 WHEN EXEC_STORE =>
                     RAM_we <= '1';
                     IF(IR_data(11) = '1') THEN
-                        Immed <= STD_LOGIC_VECTOR( RESIZE( SIGNED( IR_data( 10 DOWNTO 8 ) & IR_data( 4 DOWNTO 0 ) ), 16 ) );
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 0)), 16));
                     END IF;
                     
                 WHEN EXEC_ALU =>
@@ -216,6 +216,9 @@ BEGIN
                     IF(IR_data(15 DOWNTO 12) /= "0000") THEN
                         Rd_wr <= '1';
                         alu_op <= IR_data(15 DOWNTO 12);
+                        IF(IR_data(11) = '1') THEN 
+                            Immed <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(IR_data(4 DOWNTO 0)), 16));
+                        END IF;
                     ELSE
                         alu_op <= "0101";
                     END IF;
@@ -244,7 +247,7 @@ BEGIN
                     IN_sel <= '0';
                     
                 WHEN EXEC_BRANCH =>
-                    Immed <= STD_LOGIC_VECTOR( RESIZE( SIGNED( IR_data( 10 DOWNTO 2 ) ), 16 ) );
+                    Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 2)), 16));
                     CASE IR_data(1 DOWNTO 0) IS
                         WHEN "00" => -- JMP
                             PC_inc <= '1';
@@ -274,7 +277,7 @@ BEGIN
                 WHEN EXEC_OUTPUT =>
                     IO_we <= '1';
                     IF( IR_data(11) = '1' ) THEN     
-                        Immed <= STD_LOGIC_VECTOR( RESIZE( SIGNED( IR_data( 10 DOWNTO 8 ) & IR_data( 4 DOWNTO 2 ) ), 16 ) );
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 2)), 16));
                     END IF;
                 
                 WHEN OTHERS =>
