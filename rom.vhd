@@ -13,10 +13,13 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY rom IS
-    GENERIC( N : INTEGER := 16 );
+    GENERIC(
+        N : INTEGER := 16;
+        Q : INTEGER := 32768
+    );
     PORT (
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         en : IN STD_LOGIC;
@@ -26,7 +29,9 @@ ENTITY rom IS
 END rom;
 
 ARCHITECTURE hardware OF rom IS
-    TYPE rom_array_t IS ARRAY (0 TO 65535) OF STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
+    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
+    
+    TYPE rom_array_t IS ARRAY (0 TO Q - 1) OF word_t;
     CONSTANT rom_contents : rom_array_t := (
         "0001100000000010",     -- 00: MOV R0, 0x02     (MOV IMM)
         "0011000100000000",     -- 02: LDR R1, [R0]     (LDR REG)
@@ -42,7 +47,7 @@ BEGIN
     PROCESS(clk)
     BEGIN
         IF(RISING_EDGE(clk)) THEN
-            dout <= rom_contents( CONV_INTEGER( addr(N - 1 DOWNTO 1) ) );
+            dout <= rom_contents(TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1))));
         END IF;
     END PROCESS;
 END hardware;

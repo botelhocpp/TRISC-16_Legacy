@@ -12,8 +12,7 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_UNSIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY register_file IS
     GENERIC ( N : INTEGER := 16 );
@@ -42,7 +41,9 @@ ARCHITECTURE hardware OF register_file IS
     );
     END COMPONENT;
     
-    TYPE register_array_t IS ARRAY (7 DOWNTO 0) OF STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
+    
+    TYPE register_array_t IS ARRAY (7 DOWNTO 0) OF word_t;
     SIGNAL registers : register_array_t;
     
     SIGNAL registers_ld : STD_LOGIC_VECTOR(7 DOWNTO 0);
@@ -50,7 +51,7 @@ ARCHITECTURE hardware OF register_file IS
 BEGIN  
     generate_registers:
     FOR i IN 7 DOWNTO 0 GENERATE
-    registers_ld(i) <= '1' when Rd_sel = i and Rd_wr = '1' else '0';
+    registers_ld(i) <= '1' when Rd_sel = STD_LOGIC_VECTOR(TO_UNSIGNED(i, 3)) and Rd_wr = '1' else '0';
         REGS: register_nbit PORT MAP (
             D => Rd,
             ld => registers_ld(i),
@@ -60,7 +61,7 @@ BEGIN
         );
     END GENERATE;
     
-    Rm <= registers( CONV_INTEGER(Rm_sel) );
-    Rn <= registers( CONV_INTEGER(Rn_sel) );
+    Rm <= registers(TO_INTEGER(UNSIGNED(Rm_sel)));
+    Rn <= registers(TO_INTEGER(UNSIGNED(Rn_sel)));
     
 END hardware;

@@ -12,8 +12,6 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_SIGNED.ALL;
 
 ENTITY mcu IS
     GENERIC ( N : INTEGER := 16 );
@@ -24,6 +22,8 @@ ENTITY mcu IS
 END mcu;
 
 ARCHITECTURE behaviour OF mcu IS
+    CONSTANT ADDR_NUM : INTEGER := 2**(N - 1);
+    
     COMPONENT cpu IS
     GENERIC ( N : INTEGER := N );
     PORT (
@@ -42,7 +42,10 @@ ARCHITECTURE behaviour OF mcu IS
     END COMPONENT;
     
     COMPONENT rom IS
-    GENERIC( N : INTEGER := N );
+    GENERIC(
+        N : INTEGER := N;
+        Q : INTEGER := ADDR_NUM
+    );
     PORT (
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         en : IN STD_LOGIC;
@@ -52,7 +55,10 @@ ARCHITECTURE behaviour OF mcu IS
     END COMPONENT;
 
     COMPONENT ram IS
-    GENERIC( N : INTEGER := N );
+    GENERIC(
+        N : INTEGER := N;
+        Q : INTEGER := ADDR_NUM
+    );
     PORT (
         din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);

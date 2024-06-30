@@ -12,8 +12,6 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_SIGNED.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY alu IS
@@ -29,15 +27,15 @@ ENTITY alu IS
 END alu;
 
 ARCHITECTURE hardware OF alu IS
-    SIGNAL Q_mul : STD_LOGIC_VECTOR( 2*N - 1 DOWNTO 0 );
-    SIGNAL Q_op : STD_LOGIC_VECTOR( N DOWNTO 0 );
-    SIGNAL A_op : STD_LOGIC_VECTOR( N DOWNTO 0 );
-    SIGNAL B_op : STD_LOGIC_VECTOR( N DOWNTO 0 );
+    SIGNAL Q_mul : SIGNED( 2*N - 1 DOWNTO 0 );
+    SIGNAL Q_op : SIGNED( N DOWNTO 0 );
+    SIGNAL A_op : SIGNED( N DOWNTO 0 );
+    SIGNAL B_op : SIGNED( N DOWNTO 0 );
 BEGIN
-    A_op <= ('0' & A);
-    B_op <= ('0' & B);
+    A_op <= SIGNED('0' & A);
+    B_op <= SIGNED('0' & B);
     
-    Q_mul <= A * B;
+    Q_mul <= A_op(N - 1 DOWNTO 0) * B_op(N - 1 DOWNTO 0);
     WITH op SELECT
         Q_op <= (A_op + B_op)           WHEN "0100",
                 (A_op - B_op)           WHEN "0101",
@@ -51,7 +49,7 @@ BEGIN
                 (A_op)                  WHEN "1101", -- TODO: ROR
                 (A_op)                  WHEN "1110", -- TODO: ROL
                 (OTHERS => '0')         WHEN OTHERS;
-    Q <= Q_op(N - 1 DOWNTO 0); 
+    Q <= STD_LOGIC_VECTOR(Q_op(N - 1 DOWNTO 0)); 
     
     Z_flag <= '1' WHEN (Q_op(N - 1 DOWNTO 0) = x"0000") ELSE '0';
     C_flag <= Q_op(N);

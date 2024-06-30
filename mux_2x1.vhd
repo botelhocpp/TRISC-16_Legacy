@@ -25,5 +25,5 @@ END mux_2x1;
 
 ARCHITECTURE hardware OF mux_2x1 IS
 BEGIN    
-        Q <= I1 WHEN sel = '1' ELSE I0;
+        Q <= I1 WHEN (sel = '1') ELSE I0;
 END hardware;

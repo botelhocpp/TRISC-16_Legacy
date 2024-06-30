@@ -12,8 +12,7 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_SIGNED.ALL;
+USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY control_unit IS
     GENERIC ( N : INTEGER := 16 );
@@ -96,8 +95,8 @@ ARCHITECTURE hardware OF control_unit IS
     
     SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
-    -- Constant
-    CONSTANT kPC_DEFAULT_INCREMENT : word_t := x"0002";
+    -- Constants
+    CONSTANT kPC_DEFAULT_INCREMENT : word_t := STD_LOGIC_VECTOR(TO_UNSIGNED(N/8, N));
     
     -- Input Signals
     SIGNAL FLAGS_data : word_t;
@@ -113,6 +112,7 @@ ARCHITECTURE hardware OF control_unit IS
     SIGNAL FLAGS_load : STD_LOGIC;
     
     -- Intermediary Signals
+    SIGNAL FLAGS_intermediary : word_t;
     SIGNAL Immed_intermediary : word_t;
     SIGNAL Immed_en_intermediary : STD_LOGIC;
     
@@ -132,7 +132,7 @@ BEGIN
         Q => IR_data
     );
     FLAGS: register_nbit PORT MAP (
-        D => ("00000000000000" & FLAGS_in),
+        D => FLAGS_intermediary,
         ld => FLAGS_load,
         clk => clk,
         rst => rst,
@@ -166,8 +166,10 @@ BEGIN
 		alu_op => alu_op,
         Immed => Immed_intermediary
     );
-    PC_input <= PC_output + PC_increment;
+    PC_input <= STD_LOGIC_VECTOR(SIGNED(PC_output) + SIGNED(PC_increment));
     ROM_addr <= PC_output;
+    
+    FLAGS_intermediary <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(FLAGS_in), N));
     
     Immed <= Immed_intermediary;
     Immed_en <= Immed_en_intermediary;
