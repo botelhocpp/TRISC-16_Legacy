@@ -266,13 +266,13 @@ BEGIN
                                 PC_inc <= '1';
                             END IF;
                             
-                        WHEN "10" => -- JGT
-                            IF(Z_flag = '0' AND C_flag = '0') THEN
+                        WHEN "10" => -- JLT
+                            IF(Z_flag = '0' AND C_flag = '1') THEN
                                 PC_inc <= '1';
                             END IF;
                             
-                        WHEN OTHERS => -- JLT
-                            IF(Z_flag = '0' AND C_flag = '1') THEN
+                        WHEN OTHERS => -- JGT
+                            IF(Z_flag = '0' AND C_flag = '0') THEN
                                 PC_inc <= '1';
                             END IF;
                             

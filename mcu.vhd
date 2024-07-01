@@ -49,7 +49,6 @@ ARCHITECTURE behaviour OF mcu IS
     PORT (
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         en : IN STD_LOGIC;
-        clk : IN STD_LOGIC;
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
@@ -111,7 +110,6 @@ BEGIN
     ROM_COMP : rom PORT MAP (
         addr => ROM_addr,
         en => ROM_en,
-        clk => clk,
         dout => ROM_in
     );
     

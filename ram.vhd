@@ -33,10 +33,11 @@ ARCHITECTURE hardware OF ram IS
     
     TYPE ram_array_t IS ARRAY (0 TO Q - 1) OF word_t;
     SIGNAL ram_contents : ram_array_t := (
-        x"0000",    -- 0
-        x"1000",    -- 2
-        x"2000",    -- 4
-        x"0000",    -- 6
+        x"FFF0",    -- 0 SP
+        x"0020",    -- 2 A
+        x"0040",    -- 4 B
+        x"0061",    -- 6 C
+        x"0000",    -- 8 D
         OTHERS => x"0000"
     );
 BEGIN    
