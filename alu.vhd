@@ -46,8 +46,8 @@ BEGIN
                 (A_op XOR B_op)                         WHEN "1010",
                 (SHIFT_RIGHT(A_op, TO_INTEGER(B_op)))   WHEN "1011",
                 (SHIFT_LEFT(A_op, TO_INTEGER(B_op)))    WHEN "1100",
-                (ROTATE_RIGHT(A_op, 1))                 WHEN "1101",
-                (ROTATE_LEFT(A_op, 1))                  WHEN "1110",
+                ('0' & ROTATE_RIGHT(SIGNED(A), 1))      WHEN "1101",
+                ('0' & ROTATE_LEFT(SIGNED(A), 1))       WHEN "1110",
                 (OTHERS => '0')                         WHEN OTHERS;
     Q <= STD_LOGIC_VECTOR(Q_op(N - 1 DOWNTO 0)); 
     

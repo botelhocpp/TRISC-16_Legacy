@@ -66,6 +66,20 @@ ARCHITECTURE behaviour OF mcu IS
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
+
+    COMPONENT io_ports IS
+    GENERIC(
+        N : INTEGER := N;
+        Q : INTEGER := ADDR_NUM
+    );
+    PORT (
+        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        we : IN STD_LOGIC;
+        clk : IN STD_LOGIC;
+        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+    );
+    END COMPONENT;
     
     SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
@@ -105,6 +119,14 @@ BEGIN
         we => RAM_we,
         clk => clk,
         dout => RAM_in
+    );
+    
+    IO_COMP : io_ports PORT MAP (
+        din => DATA_out,
+        addr => DATA_addr,
+        we => IO_we,
+        clk => clk,
+        dout => IO_in
     );
     
     ROM_COMP : rom PORT MAP (

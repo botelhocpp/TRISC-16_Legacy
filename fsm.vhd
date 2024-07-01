@@ -119,7 +119,7 @@ BEGIN
                         CASE IR_data(1 DOWNTO 0) IS
                             WHEN "01" =>
                                 current_state <= EXEC_INPUT;
-                            WHEN ("00" OR "10") =>
+                            WHEN "00" | "10" =>
                                 current_state <= EXEC_OUTPUT;
                             WHEN OTHERS =>
                                 current_state <= EXEC_HALT;
