@@ -30,6 +30,7 @@ ENTITY control_unit IS
 		RAM_we : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
 		IN_sel : OUT STD_LOGIC;
+        Addr_sel : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -62,6 +63,7 @@ ARCHITECTURE hardware OF control_unit IS
 		RAM_we : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
 		IN_sel : OUT STD_LOGIC;
+        Addr_sel : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -154,6 +156,7 @@ BEGIN
         PC_clr => PC_clr,
         PC_inc => PC_inc,
 		IN_sel => IN_sel,
+        Addr_sel => Addr_sel,
 		RAM_we => RAM_we,
 		IO_we => IO_we,
 		Immed_en => Immed_en_intermediary,

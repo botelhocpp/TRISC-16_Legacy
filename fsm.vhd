@@ -36,6 +36,7 @@ ENTITY fsm IS
 		RAM_we : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
 		IN_sel : OUT STD_LOGIC;
+        Addr_sel : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
@@ -162,6 +163,8 @@ BEGIN
                     Immed_en <= '0';
                     RAM_we <= '0';
                     IO_we <= '0';
+                    IN_sel <= '0';
+                    Addr_sel <= '0';
                     RF_sel <= "00";
                     Rd_sel <= "000";
                     Rd_wr <= '0';
@@ -178,6 +181,7 @@ BEGIN
                     Immed_en <= '0';
                     RAM_we <= '0';
                     IO_we <= '0';
+                    Addr_sel <= '0';
                     Rd_wr <= '0';
                     
                 WHEN DECODE =>
@@ -233,6 +237,7 @@ BEGIN
                     Immed_en <= '1';
                     Rd_wr <= '1';
                     alu_op  <= "0101";
+                    Rd_sel <= "111";
                     
                 WHEN EXEC_POP1 =>
                     Immed <= x"0002";
@@ -240,8 +245,12 @@ BEGIN
                     Rd_wr <= '1';
                     alu_op  <= "0100";
                     Rm_sel <= "111";
+                    Rd_sel <= "111";
+                    RF_sel <= "11";
+                    Addr_sel <= '1';
                      
                 WHEN EXEC_POP2 =>
+                    Rd_sel <= IR_data(10 DOWNTO 8);
                     Immed_en <= '0';
                     RF_sel <= "10";
                     IN_sel <= '0';
