@@ -6,7 +6,7 @@
 -- Target Devices: Zybo Zynq-7000
 -- Description: The input/output ports of the processor.
 -- 
--- Dependencies: gpio
+-- Dependencies: gpio, counter
 -- 
 ----------------------------------------------------------------------------------
 
@@ -23,6 +23,7 @@ ENTITY io_ports IS
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
@@ -40,26 +41,60 @@ ARCHITECTURE hardware OF io_ports IS
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
     
+    COMPONENT counter IS
+    GENERIC(
+        N : INTEGER := 16
+    );
+    PORT (
+        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        en : IN STD_LOGIC;
+        we : IN STD_LOGIC;
+        clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
+        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+    );
+    END COMPONENT;
+    
     SIGNAL gpio_en : STD_LOGIC;
-    SIGNAL port_address : UNSIGNED(N - 1 DOWNTO 0);
+    SIGNAL counter_en : STD_LOGIC;
+    
+    SIGNAL port_address : STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+    SIGNAL port_address_u : UNSIGNED(N - 1 DOWNTO 0) := (OTHERS => 'Z');
     
 BEGIN    
     GPIO_COMP: gpio PORT MAP (
         din => din,
-        addr => addr,
+        addr => port_address,
         en => gpio_en,
         we => we,
         clk => clk,
+        rst => rst,
         dout => dout,
         pin_port => pin_port
     ); 
+    COUNTER_COMP: counter PORT MAP (
+        din => din,
+        addr => port_address,
+        en => counter_en,
+        we => we,
+        clk => clk,
+        rst => rst,
+        dout => dout
+    ); 
     
-    port_address <= UNSIGNED(addr);
+    port_address_u <= UNSIGNED(addr);
     
-    gpio_en <= '1' WHEN (port_address >= 0 AND port_address <= 2) ELSE '0';
+    gpio_en <= '1'      WHEN (port_address_u >= 0 AND port_address_u <= 5) ELSE '0';
+    counter_en <= '1'   WHEN (port_address_u >= 6 AND port_address_u <= 11) ELSE '0';
+    
+    port_address <= STD_LOGIC_VECTOR(port_address_u)        WHEN (gpio_en = '1') ELSE
+                    STD_LOGIC_VECTOR(port_address_u - 6)    WHEN (counter_en = '1');
+    
 END hardware;

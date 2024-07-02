@@ -77,6 +77,7 @@ ARCHITECTURE behaviour OF mcu IS
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
@@ -127,6 +128,7 @@ BEGIN
         addr => DATA_addr,
         we => IO_we,
         clk => clk,
+        rst => rst,
         dout => IO_in,
         pin_port => pin_port
     );

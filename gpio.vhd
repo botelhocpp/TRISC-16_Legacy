@@ -24,6 +24,7 @@ ENTITY gpio IS
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
+        rst : IN STD_LOGIC;
         dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
@@ -51,13 +52,21 @@ BEGIN
     -- Register interface (CPU <-> Controller)
     PROCESS(clk, we, en)
     BEGIN
-        IF(en = '1' AND RISING_EDGE(clk)) THEN
-            IF(we = '1' AND register_address /= DATAIN_off) THEN
-                gpio_registers(register_address) <= din;
-                dout <= (OTHERS => 'Z');
-            ELSE
-                dout <= gpio_registers(register_address);
+        IF(rst = '1') THEN
+            gpio_registers <= (OTHERS => (OTHERS => '0'));
+            dout <= (OTHERS => 'Z');
+        
+        ELSIF(en = '1') THEN
+            IF(RISING_EDGE(clk)) THEN
+                IF(we = '1' AND register_address /= DATAIN_off) THEN
+                    gpio_registers(register_address) <= din;
+                    dout <= (OTHERS => 'Z');
+                ELSE
+                    dout <= gpio_registers(register_address);
+                END IF;
             END IF;
+        ELSE
+            dout <= (OTHERS => 'Z');  
         END IF;
     END PROCESS;
     

@@ -53,7 +53,7 @@ ARCHITECTURE hardware OF rom IS
       RETURN rom_content;
     END FUNCTION;    
     
-    SIGNAL rom_contents : rom_array_t := InitROM("my_program.txt");
+    SIGNAL rom_contents : rom_array_t := InitROM("program.txt");
     
 BEGIN 
     dout <= rom_contents(TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)))) WHEN (en = '1') ELSE (OTHERS => 'Z');
