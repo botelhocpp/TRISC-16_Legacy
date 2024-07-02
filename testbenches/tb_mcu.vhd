@@ -12,8 +12,6 @@
 
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
-USE IEEE.STD_LOGIC_ARITH.ALL;
-USE IEEE.STD_LOGIC_SIGNED.ALL;
 
 ENTITY tb_mcu IS
 END tb_mcu;
@@ -27,18 +25,21 @@ ARCHITECTURE behaviour OF tb_mcu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC
+        rst : IN STD_LOGIC;
+        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
     
     -- Common Signals
     SIGNAL clk : STD_LOGIC := '0';
     SIGNAL rst : STD_LOGIC := '0';
+    SIGNAL pin_port : STD_LOGIC_VECTOR(N - 1 DOWNTO 0) := (OTHERS => 'Z');
     
 BEGIN
     MCU_COMP : mcu PORT MAP (
         clk => clk,
-        rst => rst
+        rst => rst,
+        pin_port => pin_port
     );
     
     clk <= NOT clk AFTER CLK_PERIOD/2;
@@ -50,6 +51,6 @@ BEGIN
         WAIT FOR CLK_PERIOD/2;
         
         rst <= '0';
-        WAIT FOR 60*CLK_PERIOD;
+        WAIT FOR 70*CLK_PERIOD;
     END PROCESS;
 END behaviour;

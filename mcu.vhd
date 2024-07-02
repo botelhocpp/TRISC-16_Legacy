@@ -17,7 +17,8 @@ ENTITY mcu IS
     GENERIC ( N : INTEGER := 16 );
     PORT (
         clk : IN STD_LOGIC;
-        rst : IN STD_LOGIC
+        rst : IN STD_LOGIC;
+        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
 END mcu;
 
@@ -69,15 +70,15 @@ ARCHITECTURE behaviour OF mcu IS
 
     COMPONENT io_ports IS
     GENERIC(
-        N : INTEGER := N;
-        Q : INTEGER := ADDR_NUM
+        N : INTEGER := 16
     );
     PORT (
         din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
     );
     END COMPONENT;
     
@@ -126,7 +127,8 @@ BEGIN
         addr => DATA_addr,
         we => IO_we,
         clk => clk,
-        dout => IO_in
+        dout => IO_in,
+        pin_port => pin_port
     );
     
     ROM_COMP : rom PORT MAP (
