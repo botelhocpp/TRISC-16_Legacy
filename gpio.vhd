@@ -50,7 +50,7 @@ ARCHITECTURE hardware OF gpio IS
 BEGIN    
     register_address <= TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)));
     
-    -- Register interface (CPU <-> Controller)
+    -- User interface (CPU <-> Controller)
     PROCESS(clk, we, en)
     BEGIN
         IF(rst = '1') THEN
@@ -58,17 +58,20 @@ BEGIN
             dout <= (OTHERS => 'Z');
             pin_port <= (OTHERS => 'Z');
         
-        ELSIF(en = '1') THEN
-            IF(RISING_EDGE(clk)) THEN
+        ELSIF(RISING_EDGE(clk)) THEN
+            -- User Interface Enabled
+            IF(en = '1') THEN
                 IF(we = '1' AND register_address /= DATAIN_off) THEN
                     gpio_registers(register_address) <= din;
                     dout <= (OTHERS => 'Z');
                 ELSE
                     dout <= gpio_registers(register_address);
                 END IF;
-            END IF;
-        ELSE
-            dout <= (OTHERS => 'Z');  
+            ELSE
+                dout <= (OTHERS => 'Z');
+            END IF;  
+          
+            DATAIN_reg <= pin_port;
         END IF;
     END PROCESS;
         
@@ -79,8 +82,6 @@ BEGIN
         FOR i IN 0 TO N - 1 LOOP
 
             pin_port(i) <= DATAOUT_reg(i) WHEN (DATADIR_reg(i) = '1') ELSE 'Z';
-            
-            DATAIN_reg(i) <= pin_port(i) WHEN (DATADIR_reg(i) = '0') ELSE '0';
                 
         END LOOP;
     END PROCESS;
