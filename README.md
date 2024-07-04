@@ -1,5 +1,15 @@
-# TRISC-16
-An 16-bit RISC processor made for the "Digital Systems" course.
+# TRISC-16 Processor
+
+## An 16-bit RISC processor made for the "Digital Systems" course using VHDL-2008.
+
+A microcontroller encapsulation was made for the TRISC-16 CPU, including a 64 KB ROM and RAM memories, as well as peripherals and 16 I/O pins.
+
+## Revisions
+
+The TRISC architecture is currenctly in the TRISCv2 revision.
+
+- TRISCv1: 14 simple instructions, including: Movimentation, load, store, logical and arithmetical.
+- TRISCv2: 14 instructions added, including: Branch, Comparing, Shift, Rotate, Input, Output and Stack. GPIO and Counter peripherals added, as well as 16 I/O pins.
 
 ## Features
 
