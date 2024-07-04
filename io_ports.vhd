@@ -4,6 +4,7 @@
 -- Module Name: io_ports
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: The input/output ports of the processor.
 -- 
 -- Dependencies: gpio, counter

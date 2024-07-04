@@ -4,6 +4,7 @@
 -- Module Name: counter
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: The 16-bit down counter of the processor.
 -- 
 -- Dependencies: none
@@ -59,7 +60,7 @@ BEGIN
             dout <= (OTHERS => 'Z');
         
         ELSIF(RISING_EDGE(clk)) THEN
-
+            -- Internal workings
             IF(START_bit = '1') THEN
                 COUNT_reg <= RELOAD_reg;
                 START_bit <= '0';
@@ -71,8 +72,8 @@ BEGIN
                 COUNT_reg <= STD_LOGIC_VECTOR(UNSIGNED(COUNT_reg) - 1);
             END IF;
             
+            -- User Interface
             IF(en = '1') THEN
-                
                 -- Write
                 IF(we = '1' AND register_address /= COUNT_off) THEN
                     counter_registers(register_address) <= din;

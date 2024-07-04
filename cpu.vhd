@@ -4,9 +4,10 @@
 -- Module Name: cpu
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: Pairing of the datapath and the control unit to form a processor.
 -- 
--- Dependencies: datapath, control_unit, mux_2x1
+-- Dependencies: datapath, control_unit
 -- 
 ----------------------------------------------------------------------------------
 

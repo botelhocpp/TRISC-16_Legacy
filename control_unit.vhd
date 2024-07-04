@@ -4,9 +4,10 @@
 -- Module Name: control_unit
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: The control part of the processor.
 -- 
--- Dependencies: mux_4x1, register_file, alu
+-- Dependencies: mux_2x1, register_nbit, fsm
 -- 
 ----------------------------------------------------------------------------------
 

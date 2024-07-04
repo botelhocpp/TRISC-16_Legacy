@@ -4,6 +4,7 @@
 -- Module Name: mux_2x1
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: Multiplexes 2 inputs to a singular output.
 -- 
 -- Dependencies: none

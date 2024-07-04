@@ -4,6 +4,7 @@
 -- Module Name: rom
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: The program memory of the processor.
 -- Observations: At INIT state, when en = '0' the dout is "UUUU", causing errors. 
 -- 
@@ -53,7 +54,7 @@ ARCHITECTURE hardware OF rom IS
       RETURN rom_content;
     END FUNCTION;    
     
-    SIGNAL rom_contents : rom_array_t := InitROM("program.txt");
+    SIGNAL rom_contents : rom_array_t := InitROM("my_program.txt");
     
 BEGIN 
     dout <= rom_contents(TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)))) WHEN (en = '1') ELSE (OTHERS => 'Z');

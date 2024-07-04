@@ -4,6 +4,7 @@
 -- Module Name: alu
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: Performs arithmetic and logic operations on two operands.
 -- 
 -- Dependencies: none
@@ -27,6 +28,8 @@ ENTITY alu IS
 END alu;
 
 ARCHITECTURE hardware OF alu IS
+    CONSTANT kZERO : SIGNED(N - 1 DOWNTO 0) := (OTHERS => '0');
+    
     SIGNAL Q_mul : SIGNED( 2*N - 1 DOWNTO 0 );
     SIGNAL Q_op : SIGNED( N DOWNTO 0 );
     SIGNAL A_op : SIGNED( N DOWNTO 0 );
@@ -51,6 +54,6 @@ BEGIN
                 (OTHERS => '0')                         WHEN OTHERS;
     Q <= STD_LOGIC_VECTOR(Q_op(N - 1 DOWNTO 0)); 
     
-    Z_flag <= '1' WHEN (Q_op(N - 1 DOWNTO 0) = x"0000") ELSE '0';
+    Z_flag <= '1' WHEN (Q_op(N - 1 DOWNTO 0) = kZERO) ELSE '0';
     C_flag <= Q_op(N);
 END hardware;

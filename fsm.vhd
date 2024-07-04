@@ -4,6 +4,7 @@
 -- Module Name: fsm
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: Controls the processor instruction execution.
 -- Observation: Uses Mealy machine model.
 -- 

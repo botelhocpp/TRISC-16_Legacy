@@ -4,6 +4,7 @@
 -- Module Name: register_file
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: A set of 8 n-bit registers. 
 -- 
 -- Dependencies: register_nbit.
