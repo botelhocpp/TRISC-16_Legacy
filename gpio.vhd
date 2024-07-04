@@ -4,6 +4,7 @@
 -- Module Name: gpio
 -- Project Name: TRISC-16
 -- Target Devices: Zybo Zynq-7000
+-- Language Version: VHDL-2008
 -- Description: The I/O pin controller of the processor.
 -- 
 -- Dependencies: none
@@ -55,6 +56,7 @@ BEGIN
         IF(rst = '1') THEN
             gpio_registers <= (OTHERS => (OTHERS => '0'));
             dout <= (OTHERS => 'Z');
+            pin_port <= (OTHERS => 'Z');
         
         ELSIF(en = '1') THEN
             IF(RISING_EDGE(clk)) THEN
@@ -69,17 +71,17 @@ BEGIN
             dout <= (OTHERS => 'Z');  
         END IF;
     END PROCESS;
-    
+        
     -- Pin interface (Controller <-> Pin)
-    PROCESS(pin_port)
+    PROCESS(pin_port, gpio_registers)
     BEGIN
-        gpio_port: FOR i IN 0 TO N - 1 LOOP
-            IF(DATADIR_reg(i) = '1') THEN
-                pin_port(i) <= DATAOUT_reg(i);
-                DATAIN_reg(i) <= 'Z';
-            ELSE
-                DATAIN_reg(i) <= pin_port(i);
-            END IF;
+        pin_interface:
+        FOR i IN 0 TO N - 1 LOOP
+
+            pin_port(i) <= DATAOUT_reg(i) WHEN (DATADIR_reg(i) = '1') ELSE 'Z';
+            
+            DATAIN_reg(i) <= pin_port(i) WHEN (DATADIR_reg(i) = '0') ELSE '0';
+                
         END LOOP;
     END PROCESS;
     
