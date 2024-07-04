@@ -37,6 +37,8 @@ ARCHITECTURE hardware OF counter IS
     
     SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
+    CONSTANT kZERO : word_t := (OTHERS => '0');
+    
     TYPE counter_array_t IS ARRAY (0 TO 2) OF word_t;
     
     SIGNAL counter_registers : counter_array_t := (OTHERS => (OTHERS => '0'));
@@ -65,10 +67,9 @@ BEGIN
                 COUNT_reg <= RELOAD_reg;
                 START_bit <= '0';
                 COUNTFLAG_bit <= '0';  
-            ELSIF(COUNT_reg = x"0000") THEN
+            ELSIF(COUNT_reg = kZERO) THEN
                 COUNTFLAG_bit <= '1';
             ELSE
-                COUNTFLAG_bit <= '0';
                 COUNT_reg <= STD_LOGIC_VECTOR(UNSIGNED(COUNT_reg) - 1);
             END IF;
             
