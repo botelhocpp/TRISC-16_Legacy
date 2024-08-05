@@ -15,13 +15,16 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY datapath IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         -- Inputs
-        Immed : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        Immed : IN word_t;
+        RAM_in : IN word_t;
+        IO_in : IN word_t;
         
         -- Control Signals
         Immed_en : IN STD_LOGIC;
@@ -40,8 +43,8 @@ ENTITY datapath IS
         
         -- Outputs
         FLAGS_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        DATA_addr : OUT word_t;
+        DATA_out : OUT word_t
     );
 END datapath;
 
@@ -50,53 +53,51 @@ ARCHITECTURE hardware OF datapath IS
     COMPONENT mux_4x1 IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I2 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I3 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        I0 : IN word_t;
+        I1 : IN word_t;
+        I2 : IN word_t;
+        I3 : IN word_t;
         sel : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
     END COMPONENT;
 
     COMPONENT register_file IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        Rd : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        Rd : IN word_t;
         Rd_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rd_wr : IN STD_LOGIC;
         Rm_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        Rm : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        Rn : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Rm : OUT word_t;
+        Rn : OUT word_t
     );
     END COMPONENT;
 
     COMPONENT alu IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        A : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        B : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        A : IN word_t;
+        B : IN word_t;
         op : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
         Z_flag : OUT STD_LOGIC;
         C_flag : OUT STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
     END COMPONENT;
     
     COMPONENT mux_2x1 IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        I0 : IN word_t;
+        I1 : IN word_t;
         sel : IN STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
     END COMPONENT;
-    
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
     -- Intermediary Signals
     SIGNAL Rm : word_t;

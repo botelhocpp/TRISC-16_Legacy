@@ -15,36 +15,36 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY io_ports IS
-    GENERIC(
-        N : INTEGER := 16
-    );
+    GENERIC( N : INTEGER := kWORD_SIZE );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t;
+        pin_port : INOUT word_t
     );
 END io_ports;
 
 ARCHITECTURE hardware OF io_ports IS
-
     COMPONENT gpio IS
     GENERIC(
-        N : INTEGER := 16
+        N : INTEGER := kWORD_SIZE
     );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t;
+        pin_port : INOUT word_t
     );
     END COMPONENT;
     
@@ -53,21 +53,21 @@ ARCHITECTURE hardware OF io_ports IS
         N : INTEGER := 16
     );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t
     );
     END COMPONENT;
     
     SIGNAL gpio_en : STD_LOGIC;
     SIGNAL counter_en : STD_LOGIC;
     
-    SIGNAL port_address : STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-    SIGNAL port_address_u : UNSIGNED(N - 1 DOWNTO 0) := (OTHERS => 'Z');
+    SIGNAL port_address : word_t;
+    SIGNAL port_address_u : UNSIGNED(N - 1 DOWNTO 0);
     
 BEGIN    
     GPIO_COMP: gpio PORT MAP (
@@ -79,7 +79,7 @@ BEGIN
         rst => rst,
         dout => dout,
         pin_port => pin_port
-    ); 
+    );
     COUNTER_COMP: counter PORT MAP (
         din => din,
         addr => port_address,
@@ -91,11 +91,26 @@ BEGIN
     ); 
     
     port_address_u <= UNSIGNED(addr);
-    
-    gpio_en <= '1'      WHEN (port_address_u >= 0 AND port_address_u <= 5) ELSE '0';
-    counter_en <= '1'   WHEN (port_address_u >= 6 AND port_address_u <= 11) ELSE '0';
-    
-    port_address <= STD_LOGIC_VECTOR(port_address_u)        WHEN (gpio_en = '1') ELSE
-                    STD_LOGIC_VECTOR(port_address_u - 6)    WHEN (counter_en = '1');
+        
+    PROCESS(rst, port_address_u)
+    BEGIN
+        IF(rst = '1') THEN
+            gpio_en <= '0';
+            counter_en <= '0'; 
+            port_address <= (OTHERS => '0');
+        ELSIF(port_address_u < 6) THEN
+            gpio_en <= '1';
+            counter_en <= '0'; 
+            port_address <= STD_LOGIC_VECTOR(port_address_u);
+        ELSIF(port_address_u < 12) THEN
+            gpio_en <= '0';
+            counter_en <= '1'; 
+            port_address <= STD_LOGIC_VECTOR(port_address_u - 6);
+        ELSE
+            gpio_en <= '0';
+            counter_en <= '0';
+            port_address <= (OTHERS => '0');
+        END IF;
+    END PROCESS;
     
 END hardware;

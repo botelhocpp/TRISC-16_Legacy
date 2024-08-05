@@ -14,58 +14,60 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY mcu IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        pin_port : INOUT word_t
     );
 END mcu;
 
 ARCHITECTURE behaviour OF mcu IS
-    CONSTANT ADDR_NUM : INTEGER := 2**(N - 1);
     
     COMPONENT cpu IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        ROM_in : IN word_t;
+        RAM_in : IN word_t;
+        IO_in : IN word_t;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
-        ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        ROM_addr : OUT word_t;
+        DATA_addr : OUT word_t;
+        DATA_out : OUT word_t
     );
     END COMPONENT;
     
     COMPONENT rom IS
     GENERIC(
         N : INTEGER := N;
-        Q : INTEGER := ADDR_NUM
+        Q : INTEGER := kADDR_NUM
     );
     PORT (
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        addr : IN word_t;
         en : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t
     );
     END COMPONENT;
 
     COMPONENT ram IS
     GENERIC(
         N : INTEGER := N;
-        Q : INTEGER := ADDR_NUM
+        Q : INTEGER := kADDR_NUM
     );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t
     );
     END COMPONENT;
 
@@ -74,17 +76,15 @@ ARCHITECTURE behaviour OF mcu IS
         N : INTEGER := 16
     );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t;
+        pin_port : INOUT word_t
     );
     END COMPONENT;
-    
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
     -- Input Signals
     SIGNAL ROM_in : word_t;

@@ -15,11 +15,14 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY control_unit IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         -- Inputs
-        ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        ROM_in : IN word_t;
         FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         
         -- Common
@@ -41,8 +44,8 @@ ENTITY control_unit IS
 		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
         
         -- Outputs
-        ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        Immed : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        ROM_addr : OUT word_t;
+        Immed : OUT word_t
     );
 END control_unit;
 
@@ -51,8 +54,8 @@ ARCHITECTURE hardware OF control_unit IS
     COMPONENT fsm IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        IR_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        FLAGS_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        IR_data : IN word_t;
+        FLAGS_data : IN word_t;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
@@ -71,35 +74,30 @@ ARCHITECTURE hardware OF control_unit IS
         Rm_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);     
 		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        Immed : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Immed : OUT word_t
     );
     END COMPONENT;
 
     COMPONENT register_nbit IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        D : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        D : IN word_t;
         ld : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
     END COMPONENT;
     
     COMPONENT mux_2x1 IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        I0 : IN word_t;
+        I1 : IN word_t;
         sel : IN STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
     END COMPONENT;
-    
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
-    
-    -- Constants
-    CONSTANT kPC_DEFAULT_INCREMENT : word_t := STD_LOGIC_VECTOR(TO_UNSIGNED(N/8, N));
     
     -- Input Signals
     SIGNAL FLAGS_data : word_t;

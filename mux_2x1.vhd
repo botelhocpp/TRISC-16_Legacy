@@ -14,13 +14,16 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY mux_2x1 IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
-        I0 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        I1 : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        I0 : IN word_t;
+        I1 : IN word_t;
         sel : IN STD_LOGIC;
-        Q : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Q : OUT word_t
     );
 END mux_2x1;
 

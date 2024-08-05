@@ -15,18 +15,19 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY counter IS
-    GENERIC(
-        N : INTEGER := 16
-    );
+    GENERIC( N : INTEGER := kWORD_SIZE );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t
     );
 END counter;
 
@@ -34,10 +35,6 @@ ARCHITECTURE hardware OF counter IS
     CONSTANT RELOAD_off : INTEGER := 0;
     CONSTANT CONTROL_off : INTEGER := 1;
     CONSTANT COUNT_off : INTEGER := 2;
-    
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
-    
-    CONSTANT kZERO : word_t := (OTHERS => '0');
     
     TYPE counter_array_t IS ARRAY (0 TO 2) OF word_t;
     

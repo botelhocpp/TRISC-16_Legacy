@@ -6,7 +6,6 @@
 -- Target Devices: Zybo Zynq-7000
 -- Language Version: VHDL-2008
 -- Description: The program memory of the processor.
--- Observations: At INIT state, when en = '0' the dout is "UUUU", causing errors. 
 -- 
 -- Dependencies: none
 -- 
@@ -15,46 +14,51 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
-USE STD.TEXTIO.ALL;
+
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+USE WORK.TRISC_MISC.ALL;
 
 ENTITY rom IS
     GENERIC(
-        N : INTEGER := 16;
-        Q : INTEGER := 32768
+        N : INTEGER := kWORD_SIZE;
+        Q : INTEGER := kADDR_NUM
     );
     PORT (
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        addr : IN word_t;
         en : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t
     );
 END rom;
 
-ARCHITECTURE hardware OF rom IS
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
-    
-    TYPE rom_array_t IS ARRAY (0 TO Q - 1) OF word_t;
-                                     
-    -- Load the Program Memory from File
-    FUNCTION InitROM(file_name : string) RETURN rom_array_t IS
-      FILE text_file : text OPEN read_mode IS file_name;
-      VARIABLE text_line : line;
-      VARIABLE rom_content : rom_array_t;
-      VARIABLE i : INTEGER := 0;
-    BEGIN
-      WHILE NOT ENDFILE(text_file) LOOP
-        readline(text_file, text_line);
-        bread(text_line, rom_content(i));
-        i := i + 1;
-      END LOOP;
-      
-      FOR j IN i TO Q - 1 LOOP
-        rom_content(j) := (OTHERS => '0');
-      END LOOP;
-      
-      RETURN rom_content;
-    END FUNCTION;    
-    
-    SIGNAL rom_contents : rom_array_t := InitROM("my_program.txt");
+ARCHITECTURE hardware OF rom IS 
+    CONSTANT rom_contents : mem_array_t := (
+        "0001100000000000", -- 00: MOV R0, #0
+        "1111100100011100", -- 02: OUT [R0], #0x0F
+                
+        -- while:
+        "0001100000000100", -- 04: MOV R0, #4
+        "1111000100000001", -- 06: IN R1, [R0]
+        "0000000000000101", -- 08: PUSH R1
+        "0000001000000010", -- 10: POP R2
+        "1011100101000100", -- 12: SHR R1, R2, #4
+        
+        -- if
+        "0001101000001111", -- 14: MOV R2, #0xF
+        "0111000100101000", -- 16: AND R1, R1, R2
+        "0001101000000010", -- 18: MOV R2, #2
+        "0000100000010001", -- 20: JEQ #4
+        
+        -- else
+        "1111100101011100", -- 22: OUT [R2], #0xF
+        "0000111110101000", -- 24: JMP #-22
+        
+        -- then
+        "1111100001000000", -- 22: OUT [R2], #0
+        "0000111110011000", -- 28: JMP #-26
+        
+        OTHERS => (OTHERS => '1')
+    );
     
 BEGIN 
     dout <= rom_contents(TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)))) WHEN (en = '1') ELSE (OTHERS => 'Z');

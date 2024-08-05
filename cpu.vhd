@@ -14,13 +14,16 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY cpu IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         -- Inputs
-        ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        ROM_in : IN word_t;
+        RAM_in : IN word_t;
+        IO_in : IN word_t;
         
         -- Common
         clk : IN STD_LOGIC;
@@ -32,9 +35,9 @@ ENTITY cpu IS
 		ROM_en : OUT STD_LOGIC;
         
         -- Outputs
-        ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        ROM_addr : OUT word_t;
+        DATA_addr : OUT word_t;
+        DATA_out : OUT word_t
     );
 END cpu;
 
@@ -43,9 +46,9 @@ ARCHITECTURE behaviour OF cpu IS
     COMPONENT datapath IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        Immed : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        RAM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        IO_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        Immed : IN word_t;
+        RAM_in : IN word_t;
+        IO_in : IN word_t;
         Immed_en : IN STD_LOGIC;
         IN_sel : IN STD_LOGIC;
         Addr_sel : IN STD_LOGIC;
@@ -58,15 +61,15 @@ ARCHITECTURE behaviour OF cpu IS
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
         FLAGS_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
-        DATA_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        DATA_out : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        DATA_addr : OUT word_t;
+        DATA_out : OUT word_t
     );
     END COMPONENT;
 
     COMPONENT control_unit IS
     GENERIC ( N : INTEGER := N );
     PORT (
-        ROM_in : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        ROM_in : IN word_t;
         FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
@@ -82,12 +85,10 @@ ARCHITECTURE behaviour OF cpu IS
         Rm_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);     
 		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-        ROM_addr : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        Immed : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        ROM_addr : OUT word_t;
+        Immed : OUT word_t
     );
     END COMPONENT;
-    
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
     
     -- Intermediary I/O Signals
     SIGNAL Immed : word_t;

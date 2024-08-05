@@ -15,19 +15,22 @@ LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY gpio IS
     GENERIC(
         N : INTEGER := 16
     );
     PORT (
-        din : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        addr : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        din : IN word_t;
+        addr : IN word_t;
         en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        dout : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        dout : OUT word_t;
+        pin_port : INOUT word_t
     );
 END gpio;
 
@@ -36,11 +39,9 @@ ARCHITECTURE hardware OF gpio IS
     CONSTANT DATAOUT_off : INTEGER := 1;
     CONSTANT DATAIN_off : INTEGER := 2;
     
-    SUBTYPE word_t IS STD_LOGIC_VECTOR (N - 1 DOWNTO 0);
-    
     TYPE gpio_array_t IS ARRAY (0 TO 2) OF word_t;
     
-    SIGNAL gpio_registers : gpio_array_t := (OTHERS => (OTHERS => '0'));
+    SIGNAL gpio_registers : gpio_array_t;
     
     SIGNAL register_address : INTEGER;
     
@@ -51,39 +52,54 @@ BEGIN
     register_address <= TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)));
     
     -- User interface (CPU <-> Controller)
-    PROCESS(clk, we, en)
+    PROCESS(clk, rst)
     BEGIN
+        -- Reset State
         IF(rst = '1') THEN
-            gpio_registers <= (OTHERS => (OTHERS => '0'));
+            gpio_registers <= (
+                DATADIR_off => (OTHERS => '0'),
+                DATAOUT_off => (OTHERS => '0'),
+                DATAIN_off => (OTHERS => 'Z')
+            );
             dout <= (OTHERS => 'Z');
-            pin_port <= (OTHERS => 'Z');
         
         ELSIF(RISING_EDGE(clk)) THEN
+               
+            input_pin_interface:
+            FOR i IN 0 TO N - 1 LOOP
+                DATAIN_reg(i) <= '1' WHEN (pin_port(i) = '1') ELSE '0';
+            END LOOP;
+             
             -- User Interface Enabled
             IF(en = '1') THEN
-                IF(we = '1' AND register_address /= DATAIN_off) THEN
-                    gpio_registers(register_address) <= din;
+                IF(we = '1') THEN
                     dout <= (OTHERS => 'Z');
+                                
+                    IF(register_address /= DATAIN_off) THEN
+                        gpio_registers(register_address) <= din;
+                    END IF;
                 ELSE
                     dout <= gpio_registers(register_address);
                 END IF;
             ELSE
                 dout <= (OTHERS => 'Z');
-            END IF;  
-          
-            DATAIN_reg <= pin_port;
+            END IF; 
         END IF;
     END PROCESS;
         
     -- Pin interface (Controller <-> Pin)
-    PROCESS(pin_port, gpio_registers)
+    PROCESS(rst, DATAOUT_reg, DATADIR_reg)
     BEGIN
-        pin_interface:
-        FOR i IN 0 TO N - 1 LOOP
-
-            pin_port(i) <= DATAOUT_reg(i) WHEN (DATADIR_reg(i) = '1') ELSE 'Z';
-                
-        END LOOP;
+        -- Reset State
+        IF(rst = '1') THEN
+            pin_port <= (OTHERS => 'Z');
+        ELSE
+            output_pin_interface:
+            FOR i IN 0 TO N - 1 LOOP
+                pin_port(i) <= DATAOUT_reg(i) WHEN (DATADIR_reg(i) = '1') ELSE 'Z';
+                    
+            END LOOP;
+        END IF;
     END PROCESS;
     
 END hardware;

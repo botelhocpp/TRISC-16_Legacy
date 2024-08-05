@@ -12,16 +12,19 @@
 -- 
 ----------------------------------------------------------------------------------
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 USE IEEE.NUMERIC_STD.ALL;
 
 ENTITY fsm IS
-    GENERIC ( N : INTEGER := 16 );
+    GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         -- Inputs
-        IR_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
-        FLAGS_data : IN STD_LOGIC_VECTOR(N - 1 DOWNTO 0);
+        IR_data : IN word_t;
+        FLAGS_data : IN word_t;
         
         -- Common
         clk : IN STD_LOGIC;
@@ -46,7 +49,7 @@ ENTITY fsm IS
 		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
         
         -- Outputs
-        Immed : OUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        Immed : OUT word_t
     );
 END fsm;
 
@@ -72,7 +75,7 @@ ARCHITECTURE hardware OF fsm IS
         EXEC_INPUT, 
         EXEC_OUTPUT
     );
-    SIGNAL current_state : states_t := INIT;
+    SIGNAL current_state : states_t;
     
 BEGIN  
     -- States Logic
@@ -120,7 +123,9 @@ BEGIN
                         CASE IR_data(1 DOWNTO 0) IS
                             WHEN "01" =>
                                 current_state <= EXEC_INPUT;
-                            WHEN "00" | "10" =>
+                            WHEN "00" =>
+                                current_state <= EXEC_OUTPUT;
+                            WHEN "10" =>
                                 current_state <= EXEC_OUTPUT;
                             WHEN OTHERS =>
                                 current_state <= EXEC_HALT;
@@ -131,7 +136,28 @@ BEGIN
                 WHEN EXEC_HALT => 
                     current_state <= EXEC_HALT;
                     
-                WHEN EXEC_NOP | EXEC_MOVE | EXEC_LOAD | EXEC_STORE | EXEC_ALU | EXEC_BRANCH | EXEC_INPUT | EXEC_OUTPUT =>
+                WHEN EXEC_NOP =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_MOVE =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_LOAD =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_STORE =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_ALU =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_BRANCH =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_INPUT =>
+                    current_state <= FETCH;
+                    
+                WHEN EXEC_OUTPUT =>
                     current_state <= FETCH;
                     
                 WHEN EXEC_PUSH1 =>
@@ -151,68 +177,61 @@ BEGIN
     END PROCESS;
     
     -- Output Logic
-    PROCESS(current_state, IR_data)
+    PROCESS(current_state, IR_data, Z_flag, C_flag)
     BEGIN
+        -- Reset state
+        PC_clr <= '0';
+        PC_inc <= '0';
+        ROM_en <= '0';
+        IR_load <= '0';
+        FLAGS_load <= '0';
+        Immed <= (OTHERS => '0');
+        RAM_we <= '0';
+        IO_we <= '0';
+        IN_sel <= '0';
+        Addr_sel <= '0';
+        RF_sel <= "00";
+        Rd_wr <= '0';
+        alu_op <= "0000";
+            
+        -- Operands
+        Immed_en <= IR_data(11);
+        Rd_sel <= IR_data(10 DOWNTO 8);
+        Rm_sel <= IR_data(7 DOWNTO 5);
+        Rn_sel <= IR_data(4 DOWNTO 2);
+            
             CASE current_state IS
                 WHEN INIT =>
                     PC_clr <= '1';
-                    PC_inc <= '0';
-                    ROM_en <= '0';
-                    IR_load <= '0';
-                    FLAGS_load <= '0';
-                    Immed <= (OTHERS => '0');
-                    Immed_en <= '0';
-                    RAM_we <= '0';
-                    IO_we <= '0';
-                    IN_sel <= '0';
-                    Addr_sel <= '0';
-                    RF_sel <= "00";
-                    Rd_sel <= "000";
-                    Rd_wr <= '0';
-                    Rm_sel <= "000";
-                    Rn_sel <= "000";
-                    alu_op <= "0000";
+                    
+                    -- Init SP
+                    Immed <= x"FFF0";
+                    Immed_en <= '1';
+                    Rd_wr <= '1';
+                    RF_sel <= "01";
+                    Rd_sel <= "111";
                     
                 WHEN FETCH => 
-                    PC_clr <= '0';
                     PC_inc <= '1';
                     ROM_en <= '1';
                     IR_load <= '1';
-                    FLAGS_load <= '0';
                     Immed_en <= '0';
-                    RAM_we <= '0';
-                    IO_we <= '0';
-                    Addr_sel <= '0';
-                    Rd_wr <= '0';
-                    
-                WHEN DECODE =>
-                    PC_inc <= '0';
-                    ROM_en <= '0';
-                    IR_load <= '0';
-                    Immed_en <= IR_data(11);
-                    
-                    Rd_sel <= IR_data(10 DOWNTO 8);
-                    Rm_sel <= IR_data(7 DOWNTO 5);
-                    Rn_sel <= IR_data(4 DOWNTO 2);
                     
                 WHEN EXEC_MOVE =>
                     Rd_wr <= '1';
                     IF(IR_data(11) = '1') THEN
-                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(7 DOWNTO 0)), 16));
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(7 DOWNTO 0)), N));
                         RF_sel <= "01";
-                    ELSE
-                        RF_sel <= "00";
                     END IF;
                     
                 WHEN EXEC_LOAD =>
                     Rd_wr <= '1';
                     RF_sel <= "10";
-                    IN_sel <= '0';
                     
                 WHEN EXEC_STORE =>
                     RAM_we <= '1';
                     IF(IR_data(11) = '1') THEN
-                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 0)), 16));
+                        --Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 0)), N));
                     END IF;
                     
                 WHEN EXEC_ALU =>
@@ -222,7 +241,7 @@ BEGIN
                         Rd_wr <= '1';
                         alu_op <= IR_data(15 DOWNTO 12);
                         IF(IR_data(11) = '1') THEN 
-                            Immed <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(IR_data(4 DOWNTO 0)), 16));
+                            Immed <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(IR_data(4 DOWNTO 0)), N));
                         END IF;
                     ELSE
                         alu_op <= "0101";
@@ -233,12 +252,13 @@ BEGIN
                     Rm_sel <= "111";
                      
                 WHEN EXEC_PUSH2 =>
-                    RAM_we <= '0';
                     Immed <= x"0002";
                     Immed_en <= '1';
                     Rd_wr <= '1';
                     alu_op  <= "0101";
                     Rd_sel <= "111";
+                    Rm_sel <= "111";
+                    RF_sel <= "11";
                     
                 WHEN EXEC_POP1 =>
                     Immed <= x"0002";
@@ -251,13 +271,11 @@ BEGIN
                     Addr_sel <= '1';
                      
                 WHEN EXEC_POP2 =>
-                    Rd_sel <= IR_data(10 DOWNTO 8);
-                    Immed_en <= '0';
+                    Rd_wr <= '1';
                     RF_sel <= "10";
-                    IN_sel <= '0';
                     
                 WHEN EXEC_BRANCH =>
-                    Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 2)), 16));
+                    Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 2)), N));
                     CASE IR_data(1 DOWNTO 0) IS
                         WHEN "00" => -- JMP
                             PC_inc <= '1';
@@ -287,7 +305,7 @@ BEGIN
                 WHEN EXEC_OUTPUT =>
                     IO_we <= '1';
                     IF( IR_data(11) = '1' ) THEN     
-                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 2)), 16));
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 2)), N));
                     END IF;
                 
                 WHEN OTHERS =>
