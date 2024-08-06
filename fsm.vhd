@@ -123,9 +123,7 @@ BEGIN
                         CASE IR_data(1 DOWNTO 0) IS
                             WHEN "01" =>
                                 current_state <= EXEC_INPUT;
-                            WHEN "00" =>
-                                current_state <= EXEC_OUTPUT;
-                            WHEN "10" =>
+                            WHEN "00" | "10" =>
                                 current_state <= EXEC_OUTPUT;
                             WHEN OTHERS =>
                                 current_state <= EXEC_HALT;
@@ -136,41 +134,14 @@ BEGIN
                 WHEN EXEC_HALT => 
                     current_state <= EXEC_HALT;
                     
-                WHEN EXEC_NOP =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_MOVE =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_LOAD =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_STORE =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_ALU =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_BRANCH =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_INPUT =>
-                    current_state <= FETCH;
-                    
-                WHEN EXEC_OUTPUT =>
+                WHEN EXEC_NOP | EXEC_MOVE | EXEC_LOAD | EXEC_STORE | EXEC_ALU | EXEC_BRANCH | EXEC_INPUT | EXEC_OUTPUT | EXEC_PUSH2 | EXEC_POP2 =>
                     current_state <= FETCH;
                     
                 WHEN EXEC_PUSH1 =>
                     current_state <= EXEC_PUSH2;
-                     
-                WHEN EXEC_PUSH2 =>
-                    current_state <= FETCH;
                     
                 WHEN EXEC_POP1 =>
                     current_state <= EXEC_POP2;
-                     
-                WHEN EXEC_POP2 =>
-                    current_state <= FETCH;
                     
             END CASE;
         END IF;
@@ -231,7 +202,7 @@ BEGIN
                 WHEN EXEC_STORE =>
                     RAM_we <= '1';
                     IF(IR_data(11) = '1') THEN
-                        --Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 0)), N));
+                        Immed <= STD_LOGIC_VECTOR(RESIZE(SIGNED(IR_data(10 DOWNTO 8) & IR_data(4 DOWNTO 0)), N));
                     END IF;
                     
                 WHEN EXEC_ALU =>
