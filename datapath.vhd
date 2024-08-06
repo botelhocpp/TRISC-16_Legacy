@@ -23,26 +23,24 @@ ENTITY datapath IS
     PORT (
         -- Inputs
         Immed : IN word_t;
-        RAM_in : IN word_t;
-        IO_in : IN word_t;
+        DATA_in : IN word_t;
+        PC_in : IN word_t;
         
         -- Control Signals
         Immed_en : IN STD_LOGIC;
-        IN_sel : IN STD_LOGIC;
-        Addr_sel : IN STD_LOGIC;
         RF_sel : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rd_wr : IN STD_LOGIC;
         Rm_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
-        alu_op : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        alu_op : IN alu_op_t;
         
         -- Common
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
         
         -- Outputs
-        FLAGS_out : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
+        FLAGS_out : OUT word_t;
         DATA_addr : OUT word_t;
         DATA_out : OUT word_t
     );
@@ -82,7 +80,7 @@ ARCHITECTURE hardware OF datapath IS
     PORT (
         A : IN word_t;
         B : IN word_t;
-        op : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
+        op : IN alu_op_t;
         Z_flag : OUT STD_LOGIC;
         C_flag : OUT STD_LOGIC;
         Q : OUT word_t
@@ -101,25 +99,19 @@ ARCHITECTURE hardware OF datapath IS
     
     -- Intermediary Signals
     SIGNAL Rm : word_t;
-    SIGNAL Rn_RF : word_t;
+    SIGNAL Rn : word_t;
     SIGNAL Rn_out : word_t;
     SIGNAL Rd : word_t;
+    SIGNAL alu_B : word_t;
     SIGNAL alu_res : word_t;
-    SIGNAL DATA_in : word_t;
+    SIGNAL FLAGS_alu : STD_LOGIC_VECTOR(1 DOWNTO 0);
     
 BEGIN
-    INPUT_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => RAM_in,
-        I1 => IO_in,
-        sel => IN_sel,
-        Q => DATA_in
-    ); 
-    
     RF_MUX_COMP : mux_4x1 PORT MAP (
-        I0 => Rm,
-        I1 => Immed,
+        I0 => alu_res,
+        I1 => PC_in,
         I2 => DATA_in,
-        I3 => alu_res,
+        I3 => (OTHERS => '0'),
         sel => RF_sel,
         Q => Rd
     );
@@ -133,32 +125,27 @@ BEGIN
         clk => clk,
         rst => rst,
         Rm => Rm,
-        Rn => Rn_RF
+        Rn => Rn
     );
     
     RN_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => Rn_RF,
+        I0 => Rn,
         I1 => Immed,
         sel => Immed_en,
-        Q => Rn_out
+        Q => alu_B
     ); 
     
     ALU_COMP : alu PORT MAP (
         A => Rm,
-        B => Rn_out,
+        B => alu_B,
         op => alu_op,
-        Z_flag => FLAGS_out(0),
-        C_flag => FLAGS_out(1),
+        Z_flag => FLAGS_alu(0),
+        C_flag => FLAGS_alu(1),
         Q => alu_res
     ); 
     
-    DATA_ADDR_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => Rm,
-        I1 => alu_res,
-        sel => ADDR_sel,
-        Q => DATA_addr
-    ); 
-    
-    DATA_out <= Rn_out;
+    FLAGS_out <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(FLAGS_alu), N));
+    DATA_addr <= alu_res;
+    DATA_out <= Rn;
     
 END hardware;

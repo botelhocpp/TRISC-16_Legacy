@@ -32,11 +32,12 @@ ARCHITECTURE behaviour OF mcu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         ROM_in : IN word_t;
-        RAM_in : IN word_t;
-        IO_in : IN word_t;
+        DATA_in : IN word_t;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
+		RAM_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_en : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         ROM_addr : OUT word_t;
@@ -65,6 +66,7 @@ ARCHITECTURE behaviour OF mcu IS
     PORT (
         din : IN word_t;
         addr : IN word_t;
+        en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         dout : OUT word_t
@@ -78,6 +80,7 @@ ARCHITECTURE behaviour OF mcu IS
     PORT (
         din : IN word_t;
         addr : IN word_t;
+        en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
@@ -88,8 +91,7 @@ ARCHITECTURE behaviour OF mcu IS
     
     -- Input Signals
     SIGNAL ROM_in : word_t;
-    SIGNAL RAM_in : word_t;
-    SIGNAL IO_in : word_t;
+    SIGNAL DATA_in : word_t;
     
     -- Output Signals
     SIGNAL ROM_addr : word_t;
@@ -97,18 +99,21 @@ ARCHITECTURE behaviour OF mcu IS
     SIGNAL DATA_addr : word_t;
     
     -- Control Signals
+    SIGNAL RAM_en : STD_LOGIC;
     SIGNAL RAM_we : STD_LOGIC;
+    SIGNAL IO_en : STD_LOGIC;
     SIGNAL IO_we : STD_LOGIC;
     SIGNAL ROM_en : STD_LOGIC;
     
 BEGIN
     CPU_COMP : cpu PORT MAP (
         ROM_in => ROM_in,
-        RAM_in => RAM_in,
-        IO_in => IO_in,
+        DATA_in => DATA_in,
         clk => clk,
         rst => rst,
+		RAM_en => RAM_en,
 		RAM_we => RAM_we,
+		IO_en => IO_en,
 		IO_we => IO_we,
 		ROM_en => ROM_en,
         ROM_addr => ROM_addr,
@@ -119,18 +124,20 @@ BEGIN
     RAM_COMP : ram PORT MAP (
         din => DATA_out,
         addr => DATA_addr,
+		en => RAM_en,
         we => RAM_we,
         clk => clk,
-        dout => RAM_in
+        dout => DATA_in
     );
     
     IO_COMP : io_ports PORT MAP (
         din => DATA_out,
         addr => DATA_addr,
+		en => IO_en,
         we => IO_we,
         clk => clk,
         rst => rst,
-        dout => IO_in,
+        dout => DATA_in,
         pin_port => pin_port
     );
     

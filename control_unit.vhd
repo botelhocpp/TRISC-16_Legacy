@@ -22,8 +22,9 @@ ENTITY control_unit IS
     GENERIC ( N : INTEGER := kWORD_SIZE );
     PORT (
         -- Inputs
+        PC_in : IN word_t;
         ROM_in : IN word_t;
-        FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
+        FLAGS_in : IN word_t;
         
         -- Common
         clk : IN STD_LOGIC;
@@ -31,17 +32,17 @@ ENTITY control_unit IS
         
         -- Control Signals
 		Immed_en : OUT STD_LOGIC;
+		RAM_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_en : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
-		IN_sel : OUT STD_LOGIC;
-        Addr_sel : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rm_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);     
-		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		alu_op : OUT alu_op_t;
         
         -- Outputs
         ROM_addr : OUT word_t;
@@ -59,21 +60,21 @@ ARCHITECTURE hardware OF control_unit IS
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
-        PC_inc : OUT STD_LOGIC;
-        PC_clr : OUT STD_LOGIC;
+        PC_load : OUT STD_LOGIC;
+        PC_sel : OUT STD_LOGIC;
         IR_load : OUT STD_LOGIC;
         FLAGS_load : OUT STD_LOGIC;
 		Immed_en : OUT STD_LOGIC;
+		RAM_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
+		IO_en : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
-		IN_sel : OUT STD_LOGIC;
-        Addr_sel : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rm_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rn_sel : OUT STD_LOGIC_VECTOR(2 DOWNTO 0);     
-		alu_op : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+		alu_op : OUT alu_op_t;
         Immed : OUT word_t
     );
     END COMPONENT;
@@ -105,24 +106,36 @@ ARCHITECTURE hardware OF control_unit IS
     SIGNAL PC_input : word_t;
     SIGNAL PC_output : word_t;
     SIGNAL PC_increment : word_t;
+    SIGNAL PC_adder_output : word_t;
     
     -- Internal Control Signals
-    SIGNAL PC_clr : STD_LOGIC;
-    SIGNAL PC_inc : STD_LOGIC;
+    SIGNAL PC_load : STD_LOGIC;
+    SIGNAL PC_sel : STD_LOGIC;
     SIGNAL IR_load : STD_LOGIC;
     SIGNAL FLAGS_load : STD_LOGIC;
     
     -- Intermediary Signals
-    SIGNAL FLAGS_intermediary : word_t;
     SIGNAL Immed_intermediary : word_t;
     SIGNAL Immed_en_intermediary : STD_LOGIC;
     
 BEGIN
+    ADDER_MUX_COMP: mux_2x1 PORT MAP (
+        I0 => kPC_DEFAULT_INCREMENT,
+        I1 => Immed_intermediary,
+        sel => Immed_en_intermediary,
+        Q => PC_increment
+    ); 
+    PC_MUX_COMP: mux_2x1 PORT MAP (
+        I0 => PC_adder_output,
+        I1 => PC_in,
+        sel => PC_sel,
+        Q => PC_input
+    ); 
     PC: register_nbit PORT MAP (
         D => PC_input,
-        ld => PC_inc,
+        ld => PC_load,
         clk => clk,
-        rst => PC_clr,
+        rst => rst,
         Q => PC_output
     );
     IR: register_nbit PORT MAP (
@@ -133,18 +146,12 @@ BEGIN
         Q => IR_data
     );
     FLAGS: register_nbit PORT MAP (
-        D => FLAGS_intermediary,
+        D => STD_LOGIC_VECTOR(RESIZE(UNSIGNED(FLAGS_in), N)),
         ld => FLAGS_load,
         clk => clk,
         rst => rst,
         Q => FLAGS_data
     );
-    ADDER_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => kPC_DEFAULT_INCREMENT,
-        I1 => Immed_intermediary,
-        sel => Immed_en_intermediary,
-        Q => PC_increment
-    ); 
     FSM_COMP : fsm PORT MAP (
         IR_data => IR_data,
         FLAGS_data => FLAGS_data,
@@ -152,11 +159,11 @@ BEGIN
         rst => rst,
         IR_load => IR_load,
         FLAGS_load => FLAGS_load,
-        PC_clr => PC_clr,
-        PC_inc => PC_inc,
-		IN_sel => IN_sel,
-        Addr_sel => Addr_sel,
+        PC_load => PC_load,
+        PC_sel => PC_sel,
+		RAM_en => RAM_en,
 		RAM_we => RAM_we,
+		IO_en => IO_en,
 		IO_we => IO_we,
 		Immed_en => Immed_en_intermediary,
 		ROM_en => ROM_en,
@@ -168,10 +175,8 @@ BEGIN
 		alu_op => alu_op,
         Immed => Immed_intermediary
     );
-    PC_input <= STD_LOGIC_VECTOR(SIGNED(PC_output) + SIGNED(PC_increment));
+    PC_adder_output <= STD_LOGIC_VECTOR(SIGNED(PC_output) + SIGNED(PC_increment));
     ROM_addr <= PC_output;
-    
-    FLAGS_intermediary <= STD_LOGIC_VECTOR(RESIZE(UNSIGNED(FLAGS_in), N));
     
     Immed <= Immed_intermediary;
     Immed_en <= Immed_en_intermediary;
