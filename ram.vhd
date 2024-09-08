@@ -27,7 +27,6 @@ ENTITY ram IS
     PORT (
         din : IN word_t;
         addr : IN word_t;
-        en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         dout : OUT word_t
@@ -37,11 +36,9 @@ END ram;
 ARCHITECTURE hardware OF ram IS
     SIGNAL ram_contents : mem_array_t;
 BEGIN    
-    PROCESS(clk, en)
+    PROCESS(clk)
     BEGIN
-        IF(en = '0') THEN
-            dout <= (OTHERS => 'Z');
-        ELSIF(RISING_EDGE(clk)) THEN
+        IF(RISING_EDGE(clk)) THEN
             IF(we = '1') THEN
                 ram_contents(TO_INTEGER(UNSIGNED(addr(N - 1 DOWNTO 1)))) <= din;
                 dout <= (OTHERS => 'Z');

@@ -23,7 +23,6 @@ ENTITY io_ports IS
     PORT (
         din : IN word_t;
         addr : IN word_t;
-        en : IN STD_LOGIC;
         we : IN STD_LOGIC;
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
@@ -93,9 +92,9 @@ BEGIN
     
     port_address_u <= UNSIGNED(addr);
         
-    PROCESS(en, rst, port_address_u)
+    PROCESS(rst, port_address_u)
     BEGIN
-        IF(en = '0' OR rst = '1') THEN
+        IF(rst = '1') THEN
             gpio_en <= '0';
             counter_en <= '0'; 
             port_address <= (OTHERS => '0');
