@@ -37,6 +37,7 @@ PACKAGE trisc_parameters IS
         EXEC_POP1, 
         EXEC_POP2, 
         EXEC_BRANCH, 
+        EXEC_PROCEDURE, 
         EXEC_INPUT, 
         EXEC_OUTPUT
     );

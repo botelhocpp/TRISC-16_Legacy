@@ -79,7 +79,10 @@ BEGIN
                         gpio_registers(register_address) <= din;
                     END IF;
                 ELSE
-                    dout <= gpio_registers(register_address);
+                    resd_register_interface:
+                    FOR i IN 0 TO N - 1 LOOP
+                        dout(i) <= '1' WHEN (gpio_registers(register_address)(i) = '1') ELSE '0';
+                    END LOOP;
                 END IF;
             ELSE
                 dout <= (OTHERS => 'Z');

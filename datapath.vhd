@@ -23,13 +23,12 @@ ENTITY datapath IS
     PORT (
         -- Inputs
         Immed : IN word_t;
+        PC_in : IN word_t;
         RAM_in : IN word_t;
         IO_in : IN word_t;
         
         -- Control Signals
         Immed_en : IN STD_LOGIC;
-        IN_sel : IN STD_LOGIC;
-        Addr_sel : IN STD_LOGIC;
         RF_sel : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rd_wr : IN STD_LOGIC;
@@ -105,21 +104,13 @@ ARCHITECTURE hardware OF datapath IS
     SIGNAL Rn_out : word_t;
     SIGNAL Rd : word_t;
     SIGNAL alu_res : word_t;
-    SIGNAL DATA_in : word_t;
     
 BEGIN
-    INPUT_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => RAM_in,
-        I1 => IO_in,
-        sel => IN_sel,
-        Q => DATA_in
-    ); 
-    
     RF_MUX_COMP : mux_4x1 PORT MAP (
-        I0 => Rm,
-        I1 => Immed,
-        I2 => DATA_in,
-        I3 => alu_res,
+        I0 => alu_res,
+        I1 => PC_in,
+        I2 => RAM_in,
+        I3 => IO_in,
         sel => RF_sel,
         Q => Rd
     );
@@ -150,15 +141,9 @@ BEGIN
         Z_flag => FLAGS_out(0),
         C_flag => FLAGS_out(1),
         Q => alu_res
-    ); 
-    
-    DATA_ADDR_MUX_COMP: mux_2x1 PORT MAP (
-        I0 => Rm,
-        I1 => alu_res,
-        sel => ADDR_sel,
-        Q => DATA_addr
-    ); 
+    );
     
     DATA_out <= Rn_out;
+    DATA_addr <= alu_res;
     
 END hardware;

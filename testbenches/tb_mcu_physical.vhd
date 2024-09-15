@@ -14,22 +14,25 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
-ENTITY tb_mcu IS
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
+ENTITY tb_mcu_physical IS
 GENERIC ( N : INTEGER := 16 );
 PORT (
     clk : IN STD_LOGIC;
     rst : IN STD_LOGIC;
-    pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+    pin_port : INOUT word_t
 );
-END tb_mcu;
+END tb_mcu_physical;
 
-ARCHITECTURE behaviour OF tb_mcu IS
+ARCHITECTURE behaviour OF tb_mcu_physical IS
     COMPONENT mcu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        pin_port : INOUT word_t
     );
     END COMPONENT;
     

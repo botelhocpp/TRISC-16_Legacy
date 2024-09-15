@@ -14,6 +14,9 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
+LIBRARY WORK;
+USE WORK.TRISC_PARAMETERS.ALL;
+
 ENTITY tb_mcu IS
 END tb_mcu;
 
@@ -27,14 +30,14 @@ ARCHITECTURE behaviour OF tb_mcu IS
     PORT (
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
-        pin_port : INOUT STD_LOGIC_VECTOR(N - 1 DOWNTO 0)
+        pin_port : INOUT word_t
     );
     END COMPONENT;
     
     -- Common Signals
     SIGNAL clk : STD_LOGIC := '0';
     SIGNAL rst : STD_LOGIC := '0';
-    SIGNAL pin_port : STD_LOGIC_VECTOR(N - 1 DOWNTO 0) := (OTHERS => 'Z');
+    SIGNAL pin_port : word_t := (OTHERS => 'Z');
     
 BEGIN
     MCU_COMP : mcu PORT MAP (

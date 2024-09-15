@@ -47,11 +47,10 @@ ARCHITECTURE behaviour OF cpu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         Immed : IN word_t;
+        PC_in : IN word_t;
         RAM_in : IN word_t;
         IO_in : IN word_t;
         Immed_en : IN STD_LOGIC;
-        IN_sel : IN STD_LOGIC;
-        Addr_sel : IN STD_LOGIC;
         RF_sel : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         Rd_sel : IN STD_LOGIC_VECTOR(2 DOWNTO 0);
         Rd_wr : IN STD_LOGIC;
@@ -70,14 +69,13 @@ ARCHITECTURE behaviour OF cpu IS
     GENERIC ( N : INTEGER := N );
     PORT (
         ROM_in : IN word_t;
+        PC_in : IN word_t;
         FLAGS_in : IN STD_LOGIC_VECTOR(1 DOWNTO 0);
         clk : IN STD_LOGIC;
         rst : IN STD_LOGIC;
 		Immed_en : OUT STD_LOGIC;
 		RAM_we : OUT STD_LOGIC;
 		IO_we : OUT STD_LOGIC;
-		IN_sel : OUT STD_LOGIC;
-        Addr_sel : OUT STD_LOGIC;
 		ROM_en : OUT STD_LOGIC;
         Rd_wr : OUT STD_LOGIC;
         RF_sel : OUT STD_LOGIC_VECTOR(1 DOWNTO 0);
@@ -92,12 +90,12 @@ ARCHITECTURE behaviour OF cpu IS
     
     -- Intermediary I/O Signals
     SIGNAL Immed : word_t;
+    SIGNAL DATA_addr_intermediary : word_t;
+    SIGNAL ROM_addr_intermediary : word_t;
     SIGNAL FLAGS_data : STD_LOGIC_VECTOR (1 DOWNTO 0);
     
     -- Intermediary Control Signals
     SIGNAL Immed_en : STD_LOGIC;
-    SIGNAL IN_sel : STD_LOGIC;
-    SIGNAL Addr_sel : STD_LOGIC;
     SIGNAL Rd_wr : STD_LOGIC;
     SIGNAL RF_sel : STD_LOGIC_VECTOR (1 DOWNTO 0);
     SIGNAL Rd_sel : STD_LOGIC_VECTOR (2 DOWNTO 0);
@@ -108,14 +106,13 @@ ARCHITECTURE behaviour OF cpu IS
 BEGIN    
     CTRL_UNIT_COMP : control_unit PORT MAP (
         ROM_in => ROM_in,
+        PC_in => DATA_addr_intermediary,
         FLAGS_in => FLAGS_data,
         clk => clk,
         rst => rst,
 		Immed_en => Immed_en,
 		RAM_we => RAM_we,
 		IO_we => IO_we,
-		IN_sel => IN_sel,
-        Addr_sel => Addr_sel,
 		ROM_en => ROM_en,
         Rd_wr => Rd_wr,
         RF_sel => RF_sel,
@@ -123,17 +120,16 @@ BEGIN
         Rm_sel => Rm_sel,
         Rn_sel => Rn_sel,   
 		alu_op => alu_op,
-		ROM_addr => ROM_addr,
+		ROM_addr => ROM_addr_intermediary,
         Immed => Immed
     );
     
     DP_COMP : datapath PORT MAP (
         Immed => Immed,
+        PC_in => ROM_addr_intermediary,
         RAM_in => RAM_in,
         IO_in => IO_in,
         Immed_en => Immed_en,
-        IN_sel => IN_sel,
-        Addr_sel => Addr_sel,
         RF_sel => RF_sel,
         Rd_sel => Rd_sel,
         Rd_wr => Rd_wr,
@@ -143,8 +139,11 @@ BEGIN
         clk => clk,
         rst => rst,
         FLAGS_out => FLAGS_data,
-        DATA_addr => DATA_addr,
+        DATA_addr => DATA_addr_intermediary,
         DATA_out => DATA_out
     );
+    
+    DATA_addr <= DATA_addr_intermediary;
+    ROM_addr <= ROM_addr_intermediary;
     
 END behaviour;
