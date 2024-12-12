@@ -1,6 +1,6 @@
-# TRISC-16 Processor
+# TRISC-16 Processor (Legacy)
 
-## An 16-bit RISC processor made for the "Digital Systems" course using VHDL-2008.
+## A 16-bit RISC processor made for the "Digital Systems" course using VHDL-2008.
 
 A microcontroller encapsulation was made for the TRISC-16 CPU, including a 64 KB ROM and RAM memories, as well as peripherals and 16 I/O pins.
 
@@ -19,5 +19,3 @@ For more informations, see the latest revision [datasheet](https://github.com/bo
 - [X] 28 Instructions
 - [X] GPIO
 - [X] Counter
-- [ ] PWM
-- [ ] UART
